@@ -1,0 +1,30 @@
+torch==2.8.0
+torchvision==0.23.0
+torchaudio==2.8.2
+
+# Core scientific computing
+numpy==1.24.3
+scipy==1.10.1
+pandas==2.2.2
+
+# Image processing
+Pillow==9.5.0
+kornia==0.7.4
+
+# Cryo-EM specific
+mrcfile==1.4.3
+starparser==0.4.2  # For STAR file handling
+
+# Segment Anything Model
+segment-anything==1.0
+
+# Development utilities
+tqdm==4.66.2
+ipython==8.22.2
+torchmetrics==1.8.1
+
+# Optional dependencies (uncomment if needed)
+# opencv-python==4.9.0.80
+# matplotlib==3.8.3
+# seaborn==0.13.2
+# scikit-learn==1.4.1.post1
