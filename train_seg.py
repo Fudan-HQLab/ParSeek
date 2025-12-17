@@ -101,7 +101,9 @@ def main(opt):
     while current_epoch - start_epoch <= epoch:
     # Execute model's validation step with preprocessed validation image
     # This step typically computes validation metrics (e.g., loss/accuracy) or generates inference results
-        #model.validation_step(validate_x)
+        
+        '''model.validation_step(validate_x)'''
+        
         # iterate on part of dataset
         if num_samples_per_epoch:
             train_loader = get_dataloader(
