@@ -22,20 +22,6 @@ def depth_to_space(x, block_size):
     return torch.nn.functional.pixel_shuffle(x, block_size)
 
 
-# from src import synthetic
-def add_awgnr(m: torch.tensor, i):
-    snr = -i
-    nzs = torch.count_nonzero(m)
-    Ps = torch.sum(torch.pow(m, 2)) / nzs
-    # Pn = Ps / (np.power(2,snr))
-    Pn = Ps / (2**snr)
-    noise = torch.randn(m.size()).reshape(m.shape)
-    # noise = noise.cuda()
-    noise = noise * torch.sqrt(Pn)
-    S = m + noise
-    return (S - S.min()) / (S.max() - S.min())
-
-
 def simpleLoss(pred: torch.tensor, target: torch.tensor):
     return target - pred
 
