@@ -1,4 +1,4 @@
-# ParSeek: Automated Particle Picking with Synthetic Data
+# ParSeek: Automated Particle Picking with Synthetic Data (Work In Progress)
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-brightgreen)](https://www.python.org/)
