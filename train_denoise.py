@@ -50,7 +50,7 @@ def main(opt):
 
     def train_step(img, global_mean, global_std):
         model.train_step(img)
-        # while trian on cryoppp, one epoch has about 300 iter(batchsize =1), and about 80 iter for EMPIAR-10017
+        # while trianing on cryoppp, one epoch has about 300 iters(batchsize =1), and about 80 iters for EMPIAR-10017
         if model.epoch % opt["print_every"] == 0:
             model.log()
 

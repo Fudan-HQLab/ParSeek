@@ -1,7 +1,7 @@
 # ParSeek: Automated Particle Picking with Synthetic Data
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.8%2B-brightgreen)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-brightgreen)](https://www.python.org/)
 
 ParSeek is a deep learning-based particle picker for cryo-electron microscopy (cryo-EM), **trained entirely on synthetic data** without any manual annotation. It achieves performance competitive with state-of-the-art annotation-dependent methods and can be seamlessly integrated into standard single-particle analysis (SPA) workflows.
 
@@ -28,7 +28,7 @@ ParSeek is a deep learning-based particle picker for cryo-electron microscopy (c
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ParSeek.git
+git clone https://github.com/Fudan-HQLab/ParSeek.git
 cd ParSeek
 
 # Create a conda environment (recommended)
@@ -44,16 +44,14 @@ pip install -r requirements.txt
 ```bash
 # Basic usage
 python apps/parseek.py \
-    --micrographs /path/to/your/micrographs/*.mrc \
-    --output_dir ./picked_particles \
-    --model_path ./pretrained_models/parseek.pth
+    --config /path/to/your/config.json \
 ```
 
 ### 3. Output
 
-- `particles.star` – STAR‑format particle coordinates for RELION.
-- `particles.box` – BOX‑format coordinates for cryoSPARC.
-- `probability_maps/` – Confidence maps for visual inspection.
+- `*_pick.star` – STAR‑format particle coordinates for RELION.
+- `particles.star` – STAR‑format coordinates for cryoSPARC.
+- `probability_maps/` – Confidence maps for visual inspection (if needed).
 
 ---
 
@@ -70,19 +68,6 @@ ParSeek follows a four‑step workflow:
 
 ---
 
-## 📊 Performance
-
-| Dataset (EMPIAR‑ID) | ParSeek F1‑score | Topaz F1‑score | CryoSegNet F1‑score |
-|----------------------|------------------|----------------|---------------------|
-| 10028                | **0.85**         | 0.83           | 0.81                |
-| 10081                | **0.82**         | 0.80           | 0.78                |
-| 10093                | **0.79**         | 0.77           | 0.75                |
-| 10532                | 0.76             | **0.77**       | 0.68                |
-
-ParSeek achieved **4 wins out of 7** CryoPPP benchmarks while being trained **without any real particle annotations**.
-
----
-
 ## 🧪 Training Your Own Model
 
 To generate synthetic training data and train ParSeek from scratch:
@@ -94,14 +79,14 @@ python scripts/generate_synthetic_micrographs.py \
     --structure_dir /path/to/pdb_emdb_maps \
     --output_dir ./synthetic_data
 
-# Step 2: Train the segmentation network
-python train.py \
-    --data_dir ./synthetic_data \
-    --epochs 100 \
-    --batch_size 8
-```
+# Step 2: Train the denoiseing network
+python train_denoise.py \
+    --config /path/to/your/config.json
 
-See [TRAINING.md](docs/TRAINING.md) for detailed instructions.
+# Step 4: Train the segmentation network
+python train_seg.py \
+    --config /path/to/your/config.json
+```
 
 ---
 
@@ -113,15 +98,14 @@ ParSeek/
 ├── train_seg.py                # Training segmentation script
 ├── train_denoise.py            # Training denoiser script
 ├── models/                     # Network architectures
-│   ├── bnn.py
-│   ├── seg.py
-│   └── sam_wrapper.py
+│   ├── base.py
+│   ├── denoise.py
+│   └── seg.py
 ├── scripts/                    # Data generation & utilities
 │   ├── generate_synthetic_micrographs.py
 │   └── evaluate_benchmark.py
 ├── pretrained_models/          # Pre‑trained weights
 ├── docs/                       # Documentation & figures
-├── environment.yml             # Conda environment
 └── requirements.txt            # Pip dependencies
 ```
 
@@ -148,7 +132,6 @@ If you use ParSeek in your research, please cite:
 ## 🤝 Contributing
 
 We welcome issues, feature requests, and pull requests.
-Please check [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
@@ -162,16 +145,19 @@ See [LICENSE](LICENSE) for details.
 ## ❓ FAQ
 
 **Q: Does ParSeek require GPU?**
+
 A: Yes, for training and fast inference. A GPU with ≥8 GB memory is recommended.
 
 **Q: Can I use ParSeek with cryoSPARC/RELION?**
+
 A: Yes, output formats are directly compatible.
 
 **Q: How long does training take?**
+
 A: ~6 hours on a single RTX 4070 Ti Super for the synthetic dataset of 6600 micrographs.
 
 **Q: Where can I find the pre‑trained model?**
-A: Download from [Releases](https://github.com/yourusername/ParSeek/releases) or run `download_model.sh`.
+A: Download from [Releases](https://github.com/Fudan-HQLab/ParSeek/) or run `download_model.sh`.
 
 ---
 
