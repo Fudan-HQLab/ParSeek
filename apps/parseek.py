@@ -89,10 +89,6 @@ def draw_segmentation_masks_wrapper(img, mask, alpha=0.6, colors=""):
     return res / 255.0
 
 
-# def KDTree_wrap(pts, particle_size , seperation):
-#    from scipy.spatial import KDTree
-#    tree= KDTree(pts)
-#    filter_pts = tree.sparse_distance_matrix(tree, particleSize * seperation)
 
 
 def pick_metrics(
@@ -255,8 +251,6 @@ def pick_metrics(
 
 
 def check_on_edge(x, y, h, w, d):
-    # if (x > w - d) or (x < d) or (y > h - d) or (y < d):
-    #    print(x,y,h,w,d)
     return (x > w - d) or (x < d) or (y > h - d) or (y < d)
 
 
@@ -274,7 +268,6 @@ def local_img(img, box):
 
 def local_rawmass(img, box):
     t = img[:, :, box[0]: box[2], box[1]: box[3]]
-    # print(t.shape)
     return t.sum()
 
 
@@ -290,8 +283,6 @@ def pearson_coeff(x, y):
 def SSIM(x, y):
     x = x.to(torch.float32)
     y = y.to(torch.float32)
-    # x = normalize(x)[0]
-    # y = normalize(y)[0]
     z = structural_similarity_index_measure(
         x, y, kernel_size=5, data_range=255.0)
     return z
@@ -373,8 +364,6 @@ def plot_mass(
     n_bins = 64
     plt.rcParams["figure.figsize"] = (12.8, 7.2)
     fig, axs = plt.subplots(1, 4, tight_layout=False)
-    # print(np.array(seg_mass).shape)
-    # print(np.array(tp_raw_mass).shape)
     axs[0].hist(np.array(seg_mass), bins=n_bins, density=True)
     axs[0].title.set_text("seg_mass")
     axs[1].hist(np.array(tp_raw_mass), bins=n_bins, density=True)
@@ -387,8 +376,6 @@ def plot_mass(
     colors = []
     for index, row in particles.iterrows():
         thisbox = boxes(int(row.x), int(row.y), diameter)
-        # TODO seg_img * denoise_img * mask?
-        # TODO whether non_maximum superression？
         this_brightness = (local_img(seg_img, thisbox) * mask).sum()
         brightness.append(this_brightness)
         coeff.append(
@@ -494,7 +481,6 @@ def extract_dilate(
         minmass=0,
         percentile=0.5,
     )
-    # particles = tp.locate(img_np, diameter=scale_d, separation= None,minmass = 0)
     print(particles.shape)
     if flip_Y:
         particles.y = scale_h - particles.y
@@ -502,37 +488,9 @@ def extract_dilate(
     particles.x = (particles.x).astype(np.int32)
     particles.y = (particles.y).astype(np.int32)
 
-    # TODO swap x and y?
     particles.x = particles.x * w / scale_w
     particles.y = particles.y * h / scale_h
 
-    # scale_mode = True
-    # if d > 32:
-    #     scale_mode = True
-
-    # if scale_mode:
-    #     ratio = 2
-    #     d = d // ratio
-    #     d = d // 2 * 2 + 1
-    #     img_scale = transforms.Resize((h // ratio, w // ratio))(img)
-    #     img_np = img_scale.numpy()
-    #     # min_mass = np.pi /4.0 * np.power(d/2.0,2)
-    #     particles = tp.locate(
-    #         img_np,
-    #         diameter=d,
-    #         separation=int(diameter // ratio * separation),
-    #         minmass=0,
-    #     )
-    #     particles.x = (particles.x).astype(np.int32)
-    #     particles.y = (particles.y).astype(np.int32)
-    #     # min_mass = np.pi /4.0 * np.power(d/2.0,2)
-
-    #     particles = particles * ratio
-
-    # else:
-    #     img_np = img.numpy()
-    #     particles = tp.locate(img_np, diameter=d, separation=int(diameter * separation))
-    #     # y, x ,mass, size,ecc,signal,raw_mass,ep
 
     particle_boxes = []
     color = "red"
@@ -586,12 +544,11 @@ def extract_sam(
     # NOTE filter artifects
     img_filter_mask = torch.where(img > artifects_threshold, 1, 0)
     img = img * img_filter_mask
-
+    #que    
     # img = img[
     #     :, :, meta["pad_top"] : meta["target_size"] - meta["pad_bottom"], meta["pad_left"] :meta["target_size"] - meta["pad_right"]
     # ]
 
-    # predicted_mask = img.squeeze(0)
     predicted_mask = torch.cat((img, img, img), dim=1)
     predicted_mask = predicted_mask.squeeze(0).permute(1, 2, 0)
 
@@ -607,7 +564,6 @@ def extract_sam(
             box = masks[i]["bbox"]
             bboxes.append(box)
 
-    # print("bboxes:", len(bboxes))
     # second pass
     picking_method = "parseek"
     match picking_method:
@@ -624,7 +580,6 @@ def extract_sam(
                 th = r_ * 0.20
                 th_w = mode_w * 0.1
                 th_h = mode_h * 0.1
-                # segment_mask = cv2.cvtColor(segment_mask, cv2.COLOR_GRAY2BGR)
                 for b in bboxes:
                     if (
                         b[2] < mode_w + th_w
@@ -651,8 +606,6 @@ def extract_sam(
                 r_ = int(mean_d_ // 2)
                 # th = 1/10 d_
                 th = r_ * 0.20
-                # print(d_,r_,th)
-                # segment_mask = cv2.cvtColor(segment_mask, cv2.COLOR_GRAY2BGR)
                 for b in bboxes:
                     if (
                         b[2] < mode_w + th
@@ -680,7 +633,6 @@ def extract_sam(
                 mode_w = st.mode([box[2] for box in bboxes])  # w
                 mode_h = st.mode([box[3] for box in bboxes])  # h
                 mean_d_ = (mode_w + mode_h) // 2
-                # d_ = (mode_w * mode_h)/(mode_w + mode_h)
                 th = mean_d_ * 0.3
                 for b in bboxes:
                     if (
@@ -886,8 +838,8 @@ def diagonal_hard_cut(
     mask = (y_coords / h + x_coords / w < 1.0).float()
     mask = mask.unsqueeze(0).unsqueeze(0)
     return mask * img1 + (1 - mask) * img2
-
-
+#que
+"""
 def highpass_filter_gaussian(
     input_tensor: torch.Tensor,
     cutoff_frequency: float,
@@ -907,8 +859,10 @@ def highpass_filter_gaussian(
     )
     high_freq = input_tensor - low_freq
     return high_freq
+"""
 
-
+#que
+"""
 def lowpass_filter_gaussian(
     input_tensor: torch.Tensor,
     cutoff_frequency: float,
@@ -926,8 +880,11 @@ def lowpass_filter_gaussian(
         border_type='reflect'
     )
     return low_freq
+"""
 
+#que
 
+"""
 def cryo_em_bandpass_filter(
     input_tensor: torch.Tensor,
     remove_high_freq: bool = True,
@@ -950,7 +907,7 @@ def cryo_em_bandpass_filter(
         result = result - low_freq_background * 0.3
 
     return result
-
+"""
 
 def kornia_scale_4x_cycle(input_tensor: torch.Tensor):
     B, C, H, W = input_tensor.shape
@@ -999,7 +956,6 @@ def apps_denoise(opt):
     )
 
     denoise_output_root = os.path.join(
-        # opt["aiparse_output_path"], opt["apps"]["args"]["id"]
         opt["log_dir"]
     )
 
@@ -1016,12 +972,6 @@ def apps_denoise(opt):
     if not os.path.exists(denoise_output_root):
         os.mkdir(denoise_output_root)
 
-#     save_queue = queue.Queue(maxsize= 32)
-#     def save_worker():
-#         while True:
-#             item = save_queue.get()
-#             if item is None:
-#                 break
 
     net.to(device)
     net.eval()
@@ -1034,6 +984,7 @@ def apps_denoise(opt):
                 data_og = meta["std"].view(-1, 1, 1, 1) * data + meta["mean"].view(
                     -1, 1, 1, 1
                 )
+                #que
                 # data_og = normalize(data)[0]
                 # data_og = cryo_em_bandpass_filter(data_og,15.0,1.0)
                 data_og = kornia_scale_4x_cycle(data_og)
@@ -1068,9 +1019,7 @@ def apps_denoise(opt):
                 for i in range(data.shape[0]):
                     if topaz:
                         
-                            # diagonal_hard_cut(output[i : i + 1], data_og[i : i + 1]),
                             img_to_save=diagonal_hard_cut(output[i: i + 1], topaz_img)
-                            # output.squeeze(0),
                             save_path=os.path.join(denoise_output_root, name[i] + ".jpg")
                             
                             future=save_executer.submit(
@@ -1085,7 +1034,6 @@ def apps_denoise(opt):
                     else:
                         
                             img_to_save=diagonal_hard_cut(output[i : i + 1], data_og[i : i + 1])
-                            # output.squeeze(0),
                             save_path=os.path.join(denoise_output_root, name[i] + ".jpg")
                             future=save_executer.submit(
                                 async_save_images,
@@ -1121,7 +1069,6 @@ def apps_pick(opt):
     pick_config_opt = opt["pick"]
 
     pick_output_root = os.path.join(
-        # opt["aiparse_output_path"], opt["apps"]["args"]["id"]
         opt["log_dir"]
     )
 
@@ -1132,7 +1079,6 @@ def apps_pick(opt):
         opt["pick_network"]["args"],
     )
 
-    # net_mode = opt["pick_network"]["net_mode"]
     pick_mode = opt["pick_network"]["pick_mode"]
 
     pick_state_dict = torch.load(opt["pick_network"]["path"])
@@ -1168,7 +1114,6 @@ def apps_pick(opt):
             _, _, h, w = data.shape
 
             with torch.cuda.amp.autocast():
-                # pred_mask = net_pick(data.to("cuda:0"))
                 pred_mask = process_patches(
                     net_pick, data.to("cuda:0"), 1024, 128)
 
@@ -1195,7 +1140,6 @@ def apps_pick(opt):
             output_seg = tr_back((pred_mask.squeeze(0)))
             output_seg = output_seg.unsqueeze(0)
             # do normalize for display
-            # output_seg = normalize(output_seg)[0]
 
             output_seg = output_seg.to("cpu")
 
@@ -1220,9 +1164,6 @@ def apps_pick(opt):
                         relion_metadata,
                     )
 
-            # res1 = draw_bounding_boxes_wrapper(data.to("cpu"), [] , colors)
-            # res2 = draw_bounding_boxes_wrapper(pred_mask.to("cpu"), particles_box, colors)
-            # save_image([res1.cpu(), res2.cpu()], os.path.join(aiparse_output_root,name[0] + "_metric"+ ".jpg"),nrow=1)
 
             # compare pick result with cryoppp ground truth
             if len(ppp_gt) > 0:
@@ -1264,18 +1205,6 @@ def apps_pick(opt):
                                      name[0] + "_metric" + ".jpg"),
                         normalize=False,
                     )
-                    # if debug_flag:
-                    #    plot_mass(
-                    #        aiparse_output_root,
-                    #        name[0],
-                    #        raw_img=data,
-                    #        denoise_img=data_denoise[:, 0:1, :, :],
-                    #        seg_img=output_seg,
-                    #        diameter=d,
-                    #        particles=pick_result,
-                    #        metric_particles=metric_particles_boxes,
-                    #        metric_colors=metric_colors,
-                    #    )
                 else:
                     print("groundTruth csv for %s is Not Found!" % ppp_gt[0])
 
@@ -1621,26 +1550,9 @@ def production_pick(opt):
     net_denoise.eval().to(denoise_device)
 
     # 768 + 2*128 = 1024
-    # net_denoise_x = torch.randn((1,1,1024,1024)).to(device_1)
-    # net_denoise = torch.compile(net_denoise,backend="tensorrt",
-    #                            options={
-    #                                "truncate_long_and_double": True,
-    #                                "enabled_precisions": {torch.float32, torch.float16},
-    #                            },
-    #                            dynamic=False)
-    # net_denoise(net_denoise_x)
     summary(net_pick, input_size=(1, 1, 1024, 1024))
     net_pick.eval().to(seg_device)
     # 1024 + 128*2 = 1280
-    # net_pick_x = torch.randn((1,1,1280,1280)).cuda()
-    # net_pick = torch.compile(net_pick,backend="tensorrt",
-    #                            options={
-    #                                "truncate_long_and_double": True,
-    #                                "enabled_precisions": {torch.float32, torch.float16},
-    #                            },
-    #                            dynamic=False)
-
-    # net_pick(net_pick_x)
 
     d = pick_config_opt["diameter"]
 
@@ -1762,9 +1674,6 @@ def production_pick(opt):
         for step, (data, name, data_mean, data_std, ppp_gt) in enumerate(
             tqdm.tqdm(denoise_loader)
         ):
-            # if os.path.exists(os.path.join(aiparse_output_root, name[0] + ".star")):
-            #     print(f"{name[0]}.star is existed")
-            #     continue
 
             _, _, h, w = data.shape
 
@@ -1787,6 +1696,7 @@ def production_pick(opt):
                     net_denoise, output_denoise.to(denoise_device), 640, padding=160
                 )
 
+            #que
             # transfer image to cpu
             # output_denoise = output_denoise.to("cpu")
             # match preprocess_mode:
@@ -1807,6 +1717,7 @@ def production_pick(opt):
             # pick
             # transfer image to cpu
 
+            #que
             # for model trained with normlized input , CS_RT
             # for cryoseg input
             # output_denoise = data*data_std + data_mean
@@ -1819,14 +1730,12 @@ def production_pick(opt):
                     output_denoise = output_denoise.to("cuda")
                     resize_img = tr((output_denoise.squeeze(0)))
                     resize_img = resize_img.unsqueeze(0)
-                    # resize_img = normalize(resize_img)[0]
 
                     # in full mode , net_pick is training with image size of 1024
                     resize_output = net_pick(resize_img)
                     # do sigmoid with net_pick output , no normalize
                     resize_output = torch.sigmoid(resize_output)
 
-                    # resize_output = tr(resize_output)
                     # locate particles with sam
                     match pick_mode:
                         case "sam":
@@ -1887,9 +1796,6 @@ def production_pick(opt):
                                      name[0] + "_pick.star"),
                         relion_metadata,
                     )
-            # res1 = draw_bounding_boxes_wrapper(output_denoise, [] , colors)
-            # res2 = draw_bounding_boxes_wrapper(output_seg, particles_box, colors)
-            # save_image([res1.cpu(), res2.cpu()], os.path.join(aiparse_output_root,name[0] + "_metric"+ ".jpg"))
 
             # compare pick result with cryoppp ground truth
             if len(ppp_gt) > 0:
@@ -1931,18 +1837,6 @@ def production_pick(opt):
                                      name[0] + "_metric" + ".jpg"),
                         normalize=False,
                     )
-                    # if debug_flag:
-                    #    plot_mass(
-                    #        aiparse_output_root,
-                    #        name[0],
-                    #        raw_img=data,
-                    #        denoise_img=data_denoise[:, 0:1, :, :],
-                    #        seg_img=output_seg,
-                    #        diameter=d,
-                    #        particles=pick_result,
-                    #        metric_particles=metric_particles_boxes,
-                    #        metric_colors=metric_colors,
-                    #    )
                 else:
                     print("groundTruth csv for %s is Not Found!" % ppp_gt[0])
 
@@ -1990,11 +1884,9 @@ if __name__ == "__main__":
 
     opt = parse(argspar.config)
     if os.path.exists(os.path.dirname(opt["log_dir"])):
-        # print(opt["log_dir"])
         if not os.path.exists(opt["log_dir"]):
             os.mkdir(opt["log_dir"])
 
-    # recursive_log(opt["log_file"], opt)
     recursive_log(opt["log_file"], opt)
 
     match opt["apps"]:
