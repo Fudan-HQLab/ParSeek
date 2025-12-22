@@ -1,8 +1,5 @@
 import os
-import sys
 import argparse
-import math
-import re
 
 import numpy as np
 import pandas as pd
@@ -19,32 +16,26 @@ from torchinfo import summary
 
 from PIL import Image
 import mrcfile
-from concurrent.futures import ThreadPoolExecutor,wait,ALL_COMPLETED
+from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 
 # from torchmetrics.functional.image import psnr
 from kornia.enhance import equalize_clahe
 from kornia.metrics import psnr
-import kornia.filters as filters
 import kornia.geometry.transform as kgt
 import statistics as st
-
-sys.path.append("..")
-from src.aux import normalize, zscore
-from utils.build import build
-from utils.io import log
-from utils.option import parse, recursive_log
-
-import trackpy as tp
-import tqdm
-
-from starparser import fileparser
-
-import matplotlib.pyplot as plt
 
 # load sam model to predict unet segment results
 from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 
+import tqdm
+from starparser import fileparser
+import matplotlib.pyplot as plt
+import trackpy as tp
 
+from utils.aux import normalize, zscore
+from utils.build import build
+from utils.io import log
+from utils.option import parse, recursive_log
 
 sam_model = sam_model_registry["vit_h"](
     checkpoint="/data/parsed2/git/pretrained_models/sam_vit_h_4b8939.pth"
@@ -87,8 +78,6 @@ def draw_segmentation_masks_wrapper(img, mask, alpha=0.6, colors=""):
         img_N.squeeze(0), bi_mask.squeeze(0), alpha, colors=colors
     )
     return res / 255.0
-
-
 
 
 def pick_metrics(
@@ -360,7 +349,6 @@ def plot_mass(
         tp_raw_mass.append(row.raw_mass)
         seg_mass.append(rmass)
 
-    n = len(seg_mass)
     n_bins = 64
     plt.rcParams["figure.figsize"] = (12.8, 7.2)
     fig, axs = plt.subplots(1, 4, tight_layout=False)
@@ -491,7 +479,6 @@ def extract_dilate(
     particles.x = particles.x * w / scale_w
     particles.y = particles.y * h / scale_h
 
-
     particle_boxes = []
     color = "red"
     colors = []
@@ -544,7 +531,7 @@ def extract_sam(
     # NOTE filter artifects
     img_filter_mask = torch.where(img > artifects_threshold, 1, 0)
     img = img * img_filter_mask
-    #que    
+    # que
     # img = img[
     #     :, :, meta["pad_top"] : meta["target_size"] - meta["pad_bottom"], meta["pad_left"] :meta["target_size"] - meta["pad_right"]
     # ]
@@ -782,6 +769,8 @@ def write_relion_pick_star(
         )
 
 # use for denoise
+
+
 def process_patches(model, x: torch.tensor, patch_size, padding=128):
     """modified from topaz denoise_patches"""
     n, c, h, w = x.shape
@@ -823,8 +812,10 @@ def process_patches(model, x: torch.tensor, patch_size, padding=128):
     y = y
     return y
 
-def process_patches_unfold(model , x:torch.tensor, patch_size, padding=128):
+
+def process_patches_unfold(model, x: torch.tensor, patch_size, padding=128):
     return 0
+
 
 def diagonal_hard_cut(
     img1,
@@ -838,7 +829,9 @@ def diagonal_hard_cut(
     mask = (y_coords / h + x_coords / w < 1.0).float()
     mask = mask.unsqueeze(0).unsqueeze(0)
     return mask * img1 + (1 - mask) * img2
-#que
+
+
+# que
 """
 def highpass_filter_gaussian(
     input_tensor: torch.Tensor,
@@ -861,7 +854,7 @@ def highpass_filter_gaussian(
     return high_freq
 """
 
-#que
+# que
 """
 def lowpass_filter_gaussian(
     input_tensor: torch.Tensor,
@@ -882,7 +875,7 @@ def lowpass_filter_gaussian(
     return low_freq
 """
 
-#que
+# que
 
 """
 def cryo_em_bandpass_filter(
@@ -909,6 +902,7 @@ def cryo_em_bandpass_filter(
     return result
 """
 
+
 def kornia_scale_4x_cycle(input_tensor: torch.Tensor):
     B, C, H, W = input_tensor.shape
 
@@ -930,12 +924,13 @@ def kornia_scale_4x_cycle(input_tensor: torch.Tensor):
 
 
 def apps_denoise(opt):
-    SAFE_WOKERS=4
-    save_executer=ThreadPoolExecutor(max_workers=SAFE_WOKERS)
-    save_futuers=[]
-    def async_save_images(img,save_path,normalize=False):
+    SAFE_WOKERS = 4
+    save_executer = ThreadPoolExecutor(max_workers=SAFE_WOKERS)
+    save_futuers = []
+
+    def async_save_images(img, save_path, normalize=False):
         try:
-            save_image(img,save_path,normalize=False)
+            save_image(img, save_path, normalize=False)
         except Exception as e:
             print(f"Faile to save the image {save_path}: {e}")
 
@@ -972,7 +967,6 @@ def apps_denoise(opt):
     if not os.path.exists(denoise_output_root):
         os.mkdir(denoise_output_root)
 
-
     net.to(device)
     net.eval()
     with torch.no_grad():
@@ -984,7 +978,7 @@ def apps_denoise(opt):
                 data_og = meta["std"].view(-1, 1, 1, 1) * data + meta["mean"].view(
                     -1, 1, 1, 1
                 )
-                #que
+                # que
                 # data_og = normalize(data)[0]
                 # data_og = cryo_em_bandpass_filter(data_og,15.0,1.0)
                 data_og = kornia_scale_4x_cycle(data_og)
@@ -1018,31 +1012,34 @@ def apps_denoise(opt):
                 # save denoised and origin images
                 for i in range(data.shape[0]):
                     if topaz:
-                        
-                            img_to_save=diagonal_hard_cut(output[i: i + 1], topaz_img)
-                            save_path=os.path.join(denoise_output_root, name[i] + ".jpg")
-                            
-                            future=save_executer.submit(
-                                async_save_images,
-                                img_to_save,
-                                save_path,
-                                normalize=False
-                            )
-                            save_futuers.append(future)
 
-                        
+                        img_to_save = diagonal_hard_cut(
+                            output[i: i + 1], topaz_img)
+                        save_path = os.path.join(
+                            denoise_output_root, name[i] + ".jpg")
+
+                        future = save_executer.submit(
+                            async_save_images,
+                            img_to_save,
+                            save_path,
+                            normalize=False
+                        )
+                        save_futuers.append(future)
+
                     else:
-                        
-                            img_to_save=diagonal_hard_cut(output[i : i + 1], data_og[i : i + 1])
-                            save_path=os.path.join(denoise_output_root, name[i] + ".jpg")
-                            future=save_executer.submit(
-                                async_save_images,
-                                img_to_save,
-                                save_path,
-                                normalize=False
-                            )
-                            save_futuers.append(future)
-                        
+
+                        img_to_save = diagonal_hard_cut(
+                            output[i: i + 1], data_og[i: i + 1])
+                        save_path = os.path.join(
+                            denoise_output_root, name[i] + ".jpg")
+                        future = save_executer.submit(
+                            async_save_images,
+                            img_to_save,
+                            save_path,
+                            normalize=False
+                        )
+                        save_futuers.append(future)
+
                 # calculate psnr
                 # TODO do psnr only on particles?
                 # p = psnr.peak_signal_noise_ratio(
@@ -1050,9 +1047,9 @@ def apps_denoise(opt):
                 # )
 
                 log(opt["log_file"], "%s:%.2f\n" % (name[0], psnr_value))
-                del data_og,output
+                del data_og, output
                 torch.cuda.empty_cache()
-    wait(save_futuers,return_when=ALL_COMPLETED)
+    wait(save_futuers, return_when=ALL_COMPLETED)
     save_executer.shutdown(wait=True)
     return 0
 
@@ -1164,7 +1161,6 @@ def apps_pick(opt):
                         relion_metadata,
                     )
 
-
             # compare pick result with cryoppp ground truth
             if len(ppp_gt) > 0:
                 if os.path.exists(ppp_gt[0]):
@@ -1193,14 +1189,8 @@ def apps_pick(opt):
                     res2 = draw_bounding_boxes_wrapper(
                         output_seg, metric_particles_boxes, metric_colors
                     )
-
-                    # save pick on denoised micrograph for check
-                    res3 = draw_bounding_boxes_wrapper(
-                        output_denoise, metric_particles_boxes, metric_colors
-                    )
-
                     save_image(
-                        [res3, res2],
+                        res2,
                         os.path.join(pick_output_root,
                                      name[0] + "_metric" + ".jpg"),
                         normalize=False,
@@ -1696,7 +1686,7 @@ def production_pick(opt):
                     net_denoise, output_denoise.to(denoise_device), 640, padding=160
                 )
 
-            #que
+            # que
             # transfer image to cpu
             # output_denoise = output_denoise.to("cpu")
             # match preprocess_mode:
@@ -1717,7 +1707,7 @@ def production_pick(opt):
             # pick
             # transfer image to cpu
 
-            #que
+            # que
             # for model trained with normlized input , CS_RT
             # for cryoseg input
             # output_denoise = data*data_std + data_mean

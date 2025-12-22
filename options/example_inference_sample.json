@@ -1,0 +1,30 @@
+{
+    "debug": false,
+	"apps":"parseek_denoise",
+    "inference_datasets": 
+        {
+        "dataset":"parseek_inference",
+        "args": {
+            "id": "10017",
+            "root_dir": "/path/to/cryoPPP",
+            "sub_dir": "micrographs",
+            "img_format": "mrc",
+            "N": 0
+        }
+     },
+    "networks":{
+	    "name": "BNN",
+	    "type": "BNN",
+        "path": "/path/to/denoise/model/pth/10017/net_BNN_epoch_N.pth",
+        "args": {
+            "in_ch": 1,
+            "out_ch": 1,
+            "blindspot": 11,
+            "dim": 32
+        }
+    },
+    "batch_size": 1,
+    "device":"cuda",
+    "log_dir": "/path/to/denoise/output/",
+    "log_file": "/path/to/denoise/output/10017.out"
+}

@@ -41,8 +41,6 @@ def main(opt):
 
     epoch = opt["epoch"]
     start_epoch = opt["start_epoch"]
-    print(train_loader)
-    print(len(train_loader))
     model.iter = start_epoch * len(train_loader)
 
     if "resume_from" in opt:
@@ -50,7 +48,8 @@ def main(opt):
 
     def train_step(img, global_mean, global_std):
         model.train_step(img)
-        # while trianing on cryoppp, one epoch has about 300 iters(batchsize =1), and about 80 iters for EMPIAR-10017
+        # while trianing on cryoppp, one epoch has about 300 iters(batchsize=1)
+        # and about 80 iters for EMPIAR-10017
         if model.epoch % opt["print_every"] == 0:
             model.log()
 

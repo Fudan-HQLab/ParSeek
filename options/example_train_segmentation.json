@@ -1,0 +1,42 @@
+{
+    // model
+    "model": "parseek_seg_model",
+    "epoch": 100,
+    "start_epoch": 0,
+    "iter": 0,
+    // net
+    "networks": [
+    {
+        "name": "SEG",
+        "type": "UNetTopaz",
+        "args": {
+            "in_ch": 1,
+	    "out_ch": 1,
+        "dropout": true,
+	    "dim": 32
+        }
+        }],
+    // datasets
+    "train_datasets": {
+        "dataset": "train_seg",
+        "args": {
+            "simu_micrograph_dir": "/path/to/simu/data",
+            "ratio": 0.5,
+            "target_size": 1024,
+            "img_format": "jpeg",
+            "mask_mode": "circle"
+        },
+        "batch_size": 1
+    },
+    // training parameters
+    "device": "cuda:0",
+    "lr": 1e-4,
+    "print_every": 100,
+    "save_every": 2000,
+    "val_every": 100,
+    "validate_every": 0,
+    "num_iters": 100000,
+    "log_dir": "/path/to/output/",
+    "log_file": "/path/to/output/train.log",
+    //"resume_from": "/path/to/model_epoch_00001.pth"
+    }

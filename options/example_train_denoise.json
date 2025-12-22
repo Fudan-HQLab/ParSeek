@@ -1,0 +1,49 @@
+{
+    // model
+    "model": "parseek_denoise",
+    // total iterations > 100000 is recommended
+    // for cryoPPP dataset, ~ 300 * 500 epoch
+    "epoch": 1000,
+    "start_epoch": 0,
+    "BNN_epoch": 1000,
+    "iter": 0,
+    // network
+    "networks":[{
+        "name": "BNN",
+        "type": "BNN",
+        "args": {
+            "blindspot": 11,
+            "in_ch": 1,
+	    "out_ch": 1,
+        "dim": 32
+        }
+	//"path": "/data/parsed2/parsed_train/benchmark/denoise_model_BSN/10017_clahe/net_BNN_iter_00100000.pth"
+    }, {
+        "name": "UNet",
+        "type": "UNet",
+        "args": {
+        "in_ch": 1,
+	    "out_ch": 1
+        }
+    }],
+    //datasets
+    "train_datasets": {
+         "dataset": "train_denoise",
+         "args": {
+	     "id": "10017",
+         "patch_size": 512,
+         "root_dir": "/data/parsed2/cryoPPP",
+         "sub_dir": "micrographs",
+         "img_format": "mrc"
+         },
+        "batch_size": 2
+    },
+    // training parameters
+    "lr": 1e-4,
+    "print_every": 100,
+    "save_every": 100,
+    "validate_every": 300,
+    "log_dir": "/path/to/train/output/",
+    "log_file": "/path/to/train/output/log.out",
+    //"resume":"/data/parsed2/parsed_train/benchmark/denoise_model_BSN/10017_clahe/model_iter_00100000.pth"
+    }

@@ -1,5 +1,4 @@
 import os
-
 import torch
 import torch.nn as nn
 from torch.nn.parallel import DataParallel

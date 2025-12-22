@@ -1,3 +1,4 @@
+# Modified from https://github.com/nagejacob/SpatiallyAdaptiveSSID.git
 from model.base import BaseModel
 import os
 import torch
