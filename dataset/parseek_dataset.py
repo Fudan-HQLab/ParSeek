@@ -15,14 +15,13 @@ from torchvision.utils import save_image
 
 from starparser import fileparser
 
-from data.ice_train import (
+from .parseek_dataset.train_metadata import (
     virtual_metadata,
-    virtual_test,
-    virtual_exclude3402,
     ppplite,
-    ppp_metadata,
-    virtual_draw,
 )
+
+virtual_train = virtual_metadata
+ppp = ppplite
 
 
 # c, h, w numpy
@@ -409,10 +408,6 @@ class train_denoise(Dataset):
     def __len__(self):
         return len(self.img_paths)
 
-
-virtual_train = virtual_metadata
-virtual_train = virtual_test
-ppp = ppplite
 
 
 # Dataloader for training parseek seg model

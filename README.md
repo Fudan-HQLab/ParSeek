@@ -8,7 +8,7 @@ ParSeek is a deep learning-based particle picker for cryo-electron microscopy (c
 > 📄 **Reference:**
 > *ParSeek: Accurate cryo-EM particle picking with a deep learning model trained on synthetic data*
 > *Jiaqiang Qian, Yousheng Gong, Fuyan Liu, Yimiao Huang, Gaoxing Guo, Ya Zhu and Qiang Huang*
-> **[DOI / arXiv link]** – *Please cite if you use this code.*
+>  – *Please cite if you use this code.*
 
 ---
 
