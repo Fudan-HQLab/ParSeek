@@ -156,8 +156,6 @@ A: Yes, output formats are directly compatible.
 
 A: ~6 hours on a single RTX 4070 Ti Super for the synthetic dataset of 6600 micrographs.
 
-**Q: Where can I find the pre‑trained model?**
-A: Download from [Releases](https://github.com/Fudan-HQLab/ParSeek/) or run `download_model.sh`.
 
 ---
 
